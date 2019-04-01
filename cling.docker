@@ -1,0 +1,22 @@
+FROM ubuntu:18.04
+
+# Dependencies
+RUN apt-get update
+RUN apt-get install -yq git g++ debhelper devscripts gnupg python cmake
+
+# Setup
+WORKDIR build
+
+# Git repos
+RUN git clone --depth 1 --single-branch -b cling-patches http://root.cern.ch/git/llvm.git src/
+RUN git clone --depth 1 --single-branch -b cling-patches http://root.cern.ch/git/clang.git src/tools/clang
+RUN git clone --depth 1 --single-branch -b master http://root.cern.ch/git/cling.git src/tools/cling
+
+# Build
+WORKDIR build
+RUN cmake -DCMAKE_BUILD_TYPE=Release ../src
+RUN make -j`nproc`
+RUN make -j`nproc` install
+
+# Cleanup
+RUN rm -rf /build
